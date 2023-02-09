@@ -35,11 +35,12 @@ where
 * $Sa_{avg,3}$ stands for average spectral acceleration computed at periods 
 ∈ [0.2T:3T]
 
-
+***
 ## Installation
 
     pip install xgb-rhomut
 
+***
 ## Example prediction
 Dynamic strength ratio prediction of non-collapse scenarios at a dynamic ductility level of 3.0:
 
@@ -51,7 +52,8 @@ Dynamic strength ratio prediction of non-collapse scenarios at a dynamic ductili
       ductility=4, 
       dynamic_ductility=3.0
     )
-
+    
+***
 ## Limitations
 Limitations in terms of input parameters are:
 
@@ -72,6 +74,6 @@ where
 
 Predictions made using the non-linear analysis resutls of 7292 unique SDOF systems amounting in total to 26,000,000 observations (collapse + non-collapse). 
 
-
+***
 ## References
 * Shahnazaryan D., O'Reilly J.G., 2023, Next-generation non-linear and collapse prediction models for short to long period systems via machine learning methods, *Under Review*
