@@ -1,4 +1,5 @@
 import joblib
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -7,6 +8,7 @@ import xgboost as xgb
 
 
 path = Path(__file__).parent.resolve()
+
 
 
 class XGBPredict:
@@ -36,7 +38,20 @@ class XGBPredict:
 
         self.collapse = collapse
 
-    def make_prediction(self, period, damping, hardening_ratio, ductility, dynamic_ductiliy) -> float:
+    def verify_input(self, period, damping, hardening_ratio, ductility) -> None:
+        if not (0.01 <= period <= 3.0):
+            warnings.warn("Period is not within recommended limits [0.01, 3.0]")
+        
+        if not (0.02 <= damping <= 0.2):
+            warnings.warn("Period is not within recommended limits [0.02, 0.2]")
+
+        if not (0.02 <= hardening_ratio <= 0.07):
+            warnings.warn("Period is not within recommended limits [0.02, 0.07]")
+
+        if not (2.0 <= ductility <= 8.0):
+            warnings.warn("Period is not within recommended limits [2.0, 8.0]")
+        
+    def make_prediction(self, period, damping, hardening_ratio, ductility, dynamic_ductility) -> float:
         """
         Make predictions using the XGB model
 
@@ -59,6 +74,8 @@ class XGBPredict:
             Strength ratio (R, ro_2 or ro_3)
 
         """
+        self.verify_input(period, damping, hardening_ratio, ductility)
+
         if self.collapse:
             method = "_collapse"
         else:
@@ -76,7 +93,7 @@ class XGBPredict:
             "damping": [damping],
             "hardening_ratio": [hardening_ratio],
             "ductility": [ductility],
-            "actual_ductility_end": [dynamic_ductiliy],
+            "actual_ductility_end": [dynamic_ductility],
         }
         xgb_input = pd.DataFrame.from_dict(xgb_input)
         x = scaler.transform(xgb_input)
