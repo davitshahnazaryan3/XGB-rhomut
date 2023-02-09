@@ -9,29 +9,29 @@ path = Path(__file__).parent.resolve()
 
 
 class XGBPredict:
-    def __init__(self, parameter: str, collapse: bool = False) -> None:
+    def __init__(self, static: bool, collapse: bool) -> None:
         """
         Initialize XGB model
 
         Parameters
         ----------
-        parameter: str
-            R, ro_2, ro_3
+        static: bool
+            True for static (R) and False for dynamic (rho2 or rho3)
         collapse: bool
-            default: False
             True for collapse scenarios
             False for non-collapse scenarios
             Note: ro_2 is always for non-collapse, while ro_3 is for collapse
 
         """
-        if parameter == "ro_2":
-            collapse = False
-        if parameter == "ro_3":
-            collapse = True
+        if static:
+            self.parameter = "R"
+        else:
+            if collapse:
+                self.parameter = "ro_3"
+            else:
+                self.parameter = "ro_2"
 
-        self.parameter = parameter
         self.collapse = collapse
-
 
     def make_prediction(self, period, damping, hardening_ratio, ductility, dynamic_ductiliy) -> float:
         """
