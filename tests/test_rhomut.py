@@ -1,7 +1,12 @@
 import pytest
 import numpy as np
 
-from src.rhomut import *
+import sys
+import os
+
+sys.path.append(os.path.abspath('src'))
+
+from rhomut import *
 
 
 @pytest.mark.rhomut
