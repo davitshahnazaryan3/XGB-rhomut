@@ -4,4 +4,3 @@
 
 https://medium.com/analytics-vidhya/explicit-understanding-of-python-package-building-structuring-4ac7054c0749
 
-https://github.com/arkottke/pygmm
