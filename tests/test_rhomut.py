@@ -6,7 +6,7 @@ import os
 
 sys.path.append(os.path.abspath('src'))
 
-from rhomut import *
+from xgbrhomut.r_mu_t import *
 
 
 @pytest.mark.rhomut

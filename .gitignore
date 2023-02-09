@@ -1,4 +1,8 @@
 /venv/
 /.idea/
 __pycache__/
+/.pytest_cache/
 
+xgbrhomut.egg-info
+dist/
+build/

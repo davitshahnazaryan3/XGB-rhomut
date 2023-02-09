@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 
+
 path = Path(__file__).parent.resolve()
 
 
@@ -62,10 +63,10 @@ class XGBPredict:
             method = ""
 
         # Read the XGB model
-        model = joblib.load(path.parents[1] / f"models/{self.parameter}_xgb{method}.sav")
+        model = joblib.load(path.parents[0] / f"models/{self.parameter}_xgb{method}.sav")
 
         # Get the scaler
-        scaler = joblib.load(path.parents[1] / f"models/{self.parameter}_xgb{method}_scaler.sav")
+        scaler = joblib.load(path.parents[0] / f"models/{self.parameter}_xgb{method}_scaler.sav")
 
         # Construct the input parameters
         xgb_input = {

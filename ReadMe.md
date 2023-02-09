@@ -44,7 +44,8 @@ where
 ## Example prediction
 Dynamic strength ratio prediction of non-collapse scenarios at a dynamic ductility level of 3.0:
 
-    model = XGBPredict(static=False, collapse=False)
+    import xgbrhomut
+    model = xgbrhomut.XGBPredict(static=False, collapse=False)
     model.make_prediction(
       period=1, 
       damping=0.05, 
@@ -53,6 +54,8 @@ Dynamic strength ratio prediction of non-collapse scenarios at a dynamic ductili
       dynamic_ductility=3.0
     )
     
+    xgbrhomut.r_mu_t.ec8.strength_ratio(mu=3, T=1, Tc=0.5)
+
 ***
 ## Limitations
 Limitations in terms of input parameters are:
