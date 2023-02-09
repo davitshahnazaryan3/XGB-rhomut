@@ -3,6 +3,8 @@
 __pycache__/
 /.pytest_cache/
 
-xgbrhomut.egg-info
+xgb_rhomut.egg-info
 dist/
 build/
+
+notes*

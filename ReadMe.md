@@ -8,8 +8,8 @@ Makes predictions for a strength ratio - ductility - period relationships
 
 Key arguments:
 
-    R - static strength ratio
-    Rho - dynamic strength ratio
+    R - strength ratio based on spectral acceleration
+    Rho - strength ratio based on average spectral acceleration
     Mu - ductility
     T - period
 
@@ -45,8 +45,8 @@ where
 Dynamic strength ratio prediction of non-collapse scenarios at a dynamic ductility level of 3.0:
 
     import xgbrhomut
-    model = xgbrhomut.XGBPredict(static=False, collapse=False)
-    model.make_prediction(
+    model = xgbrhomut.XGBPredict(im_type="sa_avg", collapse=False)
+    prediction = model.make_prediction(
       period=1, 
       damping=0.05, 
       hardening_ratio=0.02, 
@@ -54,6 +54,8 @@ Dynamic strength ratio prediction of non-collapse scenarios at a dynamic ductili
       dynamic_ductility=3.0
     )
     
+  Other methods
+
     xgbrhomut.r_mu_t.ec8.strength_ratio(mu=3, T=1, Tc=0.5)
 
 ***

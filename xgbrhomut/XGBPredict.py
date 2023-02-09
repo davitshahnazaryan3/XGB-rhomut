@@ -10,27 +10,29 @@ path = Path(__file__).parent.resolve()
 
 
 class XGBPredict:
-    def __init__(self, static: bool, collapse: bool) -> None:
+    def __init__(self, im_type: str, collapse: bool) -> None:
         """
         Initialize XGB model
 
         Parameters
         ----------
-        static: bool
-            True for static (R) and False for dynamic (rho2 or rho3)
+        im_type: str
+            "sa" for R, "sa_avg" for rho2 or rho3
         collapse: bool
             True for collapse scenarios
             False for non-collapse scenarios
             Note: ro_2 is always for non-collapse, while ro_3 is for collapse
 
         """
-        if static:
+        if im_type.lower() == "sa":
             self.parameter = "R"
-        else:
+        elif im_type.lower() == "sa_avg" or im_type.lower() == "saavg":
             if collapse:
                 self.parameter = "ro_3"
             else:
                 self.parameter = "ro_2"
+        else:
+            raise ValueError("Wrong im_type, must be 'sa' or 'sa_avg'")
 
         self.collapse = collapse
 
