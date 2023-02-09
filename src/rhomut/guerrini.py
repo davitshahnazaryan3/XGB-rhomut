@@ -1,4 +1,4 @@
-def ductility(R, *data):
+def ductility(R, mu, T, case, Tc):
 	"""
 	Details:
 	This implements the R-mu-T relationship proposed by Guerrini et al 2017
@@ -20,16 +20,12 @@ def ductility(R, *data):
 		See Table II in article, (options: FD, IN, SD)
 	Tc: float
 		Corner period
+		
 	Returns
     ----------
 	mu: float
 		Ductility demand
 	"""
-	try:
-		mu, T, case, Tc = data
-	except ValueError:
-		raise ValueError("Wrong input arguments")
-
 	if case.lower() == "fd":
 		ahyst = 0.7
 		Thyst = 0.055

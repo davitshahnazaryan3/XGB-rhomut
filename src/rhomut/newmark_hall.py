@@ -1,24 +1,30 @@
 import numpy as np
 
 
-def Newmark_Hall_1992(mu, T, Tcc, Tc):
+def strength_ratio(mu, T, Tcc, Tc):
 	"""
 	Details:
 	This implements the R-mu-T relationship proposed by Newmark and Hall (1992)
-	Information:
-	Author: Gerard J. O'Reilly
-	First Version: September 2022
-	Notes:
+	
 	References:
 	Newmark,  N.  M.,  and  Hall,  W.  J.,  1982,  Earthquake  Spectra  and  Design,
 	Earthquake  Engineering  Research Institute, Berkeley, CA
-	Inputs:
-	mu:
-	T: period
-	Tcc: corner period (called Tc' in article)
-	Tc: corner period (where the A range transitions to the V range)
-	Returns:
-	R: strength ratio
+	
+	Parameters
+    ----------
+	mu: float
+		Ductility demand
+	Tc: float
+		Corner period
+	Tcc: float
+		Corner period (called Tc' in article)
+	Tc: float
+		Corner period (where the A range transitions to the V range)
+		
+	Returns
+    ----------
+	R: float
+		Strength ratio
 	"""
 
 	# Set the period values based on Newmark and Hall's spectrum
@@ -40,6 +46,5 @@ def Newmark_Hall_1992(mu, T, Tcc, Tc):
 	else:
 		raise ValueError
 
-	# Return the outputs
 	return R
 
