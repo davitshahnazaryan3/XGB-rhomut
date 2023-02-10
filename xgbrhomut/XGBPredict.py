@@ -51,7 +51,7 @@ class XGBPredict:
         if not (2.0 <= ductility <= 8.0):
             warnings.warn("Period is not within recommended limits [2.0, 8.0]")
         
-    def make_prediction(self, period, damping, hardening_ratio, ductility, dynamic_ductility) -> float:
+    def make_prediction(self, period: float, damping: float, hardening_ratio: float, ductility: float, dynamic_ductility:float=None) -> float:
         """
         Make predictions using the XGB model
 
@@ -66,7 +66,7 @@ class XGBPredict:
         ductility: float
             Hardening ductility of system
         dynamic_ductility: float
-            Ductility where the strength ratio is being predicted
+            Ductility where the strength ratio is being predicted, required for non-collapse predictions
 
         Returns
         ----------
@@ -75,6 +75,9 @@ class XGBPredict:
 
         """
         self.verify_input(period, damping, hardening_ratio, ductility)
+
+        if not dynamic_ductility and not self.collapse:
+            raise ValueError("Dynamic ductility not provided for non-collapse predictions")
 
         if self.collapse:
             method = "_collapse"
@@ -93,8 +96,12 @@ class XGBPredict:
             "damping": [damping],
             "hardening_ratio": [hardening_ratio],
             "ductility": [ductility],
-            "actual_ductility_end": [dynamic_ductility],
         }
+
+        # Ad dynamic ductility for non-collapse predictions
+        if not self.collapse:
+            xgb_input["actual_ductility_end"] = [dynamic_ductility]
+        
         xgb_input = pd.DataFrame.from_dict(xgb_input)
         x = scaler.transform(xgb_input)
 

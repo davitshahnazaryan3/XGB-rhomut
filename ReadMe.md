@@ -1,4 +1,4 @@
-# XGBoost - Rho-Mu-T
+# XGBoost - $\rho-\mu-T$
 
 Next-generation non-linear and collapse prediction models for short to long period systems via machine learning methods
 
@@ -8,32 +8,32 @@ Makes predictions for a strength ratio - ductility - period relationships
 
 Key arguments:
 
-    R - strength ratio based on spectral acceleration
-    Rho - strength ratio based on average spectral acceleration
-    Mu - ductility
-    T - period
+* $R$ - strength ratio based on spectral acceleration
+* $\rho$ - strength ratio based on average spectral acceleration
+* $\mu$ - ductility
+* $T$ - period
 
 
 $$
-  R=\frac{Sa(T_1)}{Sa_y}
+  R=\frac{Sa(T)}{Sa_y}
 $$
 
 $$
-  \rho_2=\frac{Sa_{avg,2}}{Sa_y}
+  \rho_2=\frac{Sa_{avg,2}(T)}{Sa_y}
 $$
 
 $$
-  \rho_3=\frac{Sa_{avg,3}}{Sa_y}
+  \rho_3=\frac{Sa_{avg,3}(T)}{Sa_y}
 $$
 
 where 
 
-* $Sa(T_1)$ stands for spectral acceleration at fundamental period
+* $Sa(T)$ stands for spectral acceleration at fundamental period
 * $Sa_y$ stands for spectral acceleration at yield
-* $Sa_{avg,2}$ stands for average spectral acceleration computed at periods 
-∈ [0.2T:2T]
-* $Sa_{avg,3}$ stands for average spectral acceleration computed at periods 
-∈ [0.2T:3T]
+* $Sa_{avg,2}(T)$ stands for average spectral acceleration computed at periods 
+$∈ [0.2T:2T]$
+* $Sa_{avg,3}(T)$ stands for average spectral acceleration computed at periods 
+$∈ [0.2T:3T]$
 
 ***
 ## Installation
@@ -54,7 +54,16 @@ Dynamic strength ratio prediction of non-collapse scenarios at a dynamic ductili
       dynamic_ductility=3.0
     )
     
-  Other methods
+
+prediction:
+
+    {
+      "median": float,
+      "dispersion": float
+    }
+
+    
+Other methods
 
     xgbrhomut.r_mu_t.ec8.strength_ratio(mu=3, T=1, Tc=0.5)
 
