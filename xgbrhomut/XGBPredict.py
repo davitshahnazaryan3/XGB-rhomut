@@ -6,10 +6,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import xgboost as xgb
+from pydantic import BaseModel
+from scipy.interpolate import interp1d
 
 
 path = Path(__file__).parent.resolve()
 
+
+class PredictionSchema(BaseModel):
+    strength_ratio: float
+    dispersion: float
 
 
 class XGBPredict:
@@ -52,7 +58,7 @@ class XGBPredict:
         if not (2.0 <= ductility <= 8.0):
             warnings.warn("Period is not within recommended limits [2.0, 8.0]")
         
-    def make_prediction(self, period: float, damping: float, hardening_ratio: float, ductility: float, dynamic_ductility:float=None) -> dict:
+    def make_prediction(self, period: float, damping: float, hardening_ratio: float, ductility: float, dynamic_ductility:float=None) -> PredictionSchema:
         """
         Make predictions using the XGB model
 
@@ -113,7 +119,7 @@ class XGBPredict:
 
         # Retrieve dispersion
         dispersions = json.load(open(path.parents[0] / f"models/{self.parameter}_xgb{method}_dispersions.json"))
-        dispersion = dispersions[str(float(period))][str(float(damping))][str(float(hardening_ratio))][str(ductility)]
+        dispersion = self.get_dispersion(dispersions, period, damping, hardening_ratio, ductility, dynamic_ductility)
 
         prediction = {
             "strength_ratio": median[0],
@@ -121,3 +127,28 @@ class XGBPredict:
         }
 
         return prediction
+        
+    def get_dispersion(self, dispersions, period, damping, hardening_ratio, ductility, dynamic_ductility) -> float:
+        """
+        Gets dispersion values
+
+        Returns
+        ----------
+        val: float
+            Dispersion
+        """
+        dispersion = dispersions[str(float(period))][str(float(damping))][str(float(hardening_ratio))][str(ductility)]
+        if self.collapse:
+            return dispersion
+
+        ductilities = dispersions["ductility"]
+
+        interpolator = interp1d(ductilities, dispersion, fill_value=[dispersion[-1]], bounds_error=False)
+
+        val = float(interpolator(dynamic_ductility))
+        
+        if np.isnan(val) or val == 0:
+            warnings.warn("Dispersion is null, as dynamic ductility is unattainable for given input... Try with smaller dynamic ductility value")
+            val = max(dispersion)
+
+        return val
