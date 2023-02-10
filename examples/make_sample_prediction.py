@@ -9,7 +9,7 @@ from xgbrhomut import *
 
 
 model = XGBPredict(
-    im_type="sa_avg", 
+    im_type="sa", 
     collapse=True
 )
 

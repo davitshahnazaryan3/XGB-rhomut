@@ -1,4 +1,5 @@
 import joblib
+import json
 import warnings
 from pathlib import Path
 
@@ -51,7 +52,7 @@ class XGBPredict:
         if not (2.0 <= ductility <= 8.0):
             warnings.warn("Period is not within recommended limits [2.0, 8.0]")
         
-    def make_prediction(self, period: float, damping: float, hardening_ratio: float, ductility: float, dynamic_ductility:float=None) -> float:
+    def make_prediction(self, period: float, damping: float, hardening_ratio: float, ductility: float, dynamic_ductility:float=None) -> dict:
         """
         Make predictions using the XGB model
 
@@ -70,9 +71,11 @@ class XGBPredict:
 
         Returns
         ----------
-        prediction: float
-            Strength ratio (R, ro_2 or ro_3)
-
+        prediction: dict
+            {
+                Strength ratio (R, ro_2 or ro_3),
+                dispersion
+            }
         """
         self.verify_input(period, damping, hardening_ratio, ductility)
 
@@ -106,6 +109,15 @@ class XGBPredict:
         x = scaler.transform(xgb_input)
 
         matrix = xgb.DMatrix(x)
-        prediction = np.expm1(model.predict(matrix))
+        median = np.expm1(model.predict(matrix))
 
-        return prediction[0]
+        # Retrieve dispersion
+        dispersions = json.load(open(path.parents[0] / f"models/{self.parameter}_xgb{method}_dispersions.json"))
+        dispersion = dispersions[str(float(period))][str(float(damping))][str(float(hardening_ratio))][str(ductility)]
+
+        prediction = {
+            "strength_ratio": median[0],
+            "dispersion": dispersion,
+        }
+
+        return prediction
