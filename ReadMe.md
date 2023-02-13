@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/599498240.svg)](https://zenodo.org/badge/latestdoi/599498240)
+
 # XGBoost - $\rho-\mu-T$
 
 Next-generation non-linear and collapse prediction models for short to long period systems via machine learning methods
