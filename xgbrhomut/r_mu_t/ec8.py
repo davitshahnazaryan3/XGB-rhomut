@@ -1,5 +1,5 @@
 def strength_ratio(mu: float, period: float, period_c: float) -> float:
-    """This implements the R-mu-T relationship provided in Annex B of 
+    """This implements the R-mu-T relationship provided in Annex B of
     Eurocode 8 Part 1
 
     References
