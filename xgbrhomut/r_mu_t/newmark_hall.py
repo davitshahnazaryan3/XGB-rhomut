@@ -1,50 +1,47 @@
 import numpy as np
 
 
-def strength_ratio(mu, T, Tcc, Tc):
-	"""
-	Details:
-	This implements the R-mu-T relationship proposed by Newmark and Hall (1992)
+def strength_ratio(mu: float, period: float, period_cc: float, period_c: float) -> float:
+	"""This implements the R-mu-T relationship proposed by Newmark and Hall (1992)
 	
-	References:
+	References
+	------
 	Newmark,  N.  M.,  and  Hall,  W.  J.,  1982,  Earthquake  Spectra  and  Design,
 	Earthquake  Engineering  Research Institute, Berkeley, CA
 	
 	Parameters
-    ----------
-	mu: float
+	------
+	mu : float
 		Ductility demand
-	Tc: float
-		Corner period
-	Tcc: float
+	period : float
+		Period
+	period_cc : float
 		Corner period (called Tc' in article)
-	Tc: float
+	period_c : float
 		Corner period (where the A range transitions to the V range)
 		
 	Returns
-    ----------
-	R: float
+	------
+	float
 		Strength ratio
 	"""
 
 	# Set the period values based on Newmark and Hall's spectrum
-	Ta = 1. / 33
-	Tb = 0.125
+	period_a = 1. / 33
+	period_b = 0.125
 
-	beta = np.log(T / Ta) / np.log(Tb / Ta)
+	beta = np.log(period / period_a) / np.log(period_b / period_a)
 
-	if T < Ta:
-		R = 1
-	elif T <= Tb:
-		R = pow(2 * mu - 1, 0.5 * beta)
-	elif T <= Tcc:
-		R = pow(2 * mu - 1, 0.5)
-	elif T <= Tc:
-		R = (T / Tc) * mu
-	elif T >= Tc:
-		R = mu
-	else:
-		raise ValueError
+	if period < period_a:
+		strength_ratio = 1
+	elif period <= period_b:
+		strength_ratio = pow(2 * mu - 1, 0.5 * beta)
+	elif period <= period_cc:
+		strength_ratio = pow(2 * mu - 1, 0.5)
+	elif period <= period_c:
+		strength_ratio = (period / period_c) * mu
+	elif period >= period_c:
+		strength_ratio = mu
 
-	return R
+	return strength_ratio
 

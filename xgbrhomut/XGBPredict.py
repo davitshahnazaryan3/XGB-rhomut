@@ -25,12 +25,17 @@ class XGBPredict:
 
         Parameters
         ----------
-        im_type: str
+        im_type : str
             "sa" for R, "sa_avg" for rho2 or rho3
-        collapse: bool
+        collapse : bool
             True for collapse scenarios
             False for non-collapse scenarios
             Note: ro_2 is always for non-collapse, while ro_3 is for collapse
+            
+        Raises
+        ------
+        ValueError
+            When im_type is neither 'sa' nor 'sa_avg'
 
         """
         if im_type.lower() == "sa":
@@ -45,7 +50,7 @@ class XGBPredict:
 
         self.collapse = collapse
 
-    def verify_input(self, period, damping, hardening_ratio, ductility) -> None:
+    def _verify_input(self, period, damping, hardening_ratio, ductility) -> None:
         if not (0.01 <= period <= 3.0):
             warnings.warn("Period is not within recommended limits [0.01, 3.0]")
         
@@ -64,26 +69,27 @@ class XGBPredict:
 
         Parameters
         ----------
-        period: float
+        period : float
             Period
-        damping: float
+        damping : float
             Damping ratio
-        hardening_ratio: float
+        hardening_ratio : float
             Hardening ratio
-        ductility: float
+        ductility : float
             Hardening ductility of system
-        dynamic_ductility: float
+        dynamic_ductility : float
             Ductility where the strength ratio is being predicted, required for non-collapse predictions
 
         Returns
         ----------
-        prediction: dict
+        PredictionSchema
+            Predictions in dict type
             {
                 Strength ratio (R, ro_2 or ro_3),
                 dispersion
             }
         """
-        self.verify_input(period, damping, hardening_ratio, ductility)
+        self._verify_input(period, damping, hardening_ratio, ductility)
 
         if not dynamic_ductility and not self.collapse:
             raise ValueError("Dynamic ductility not provided for non-collapse predictions")
@@ -119,7 +125,7 @@ class XGBPredict:
 
         # Retrieve dispersion
         dispersions = json.load(open(path.parents[0] / f"models/{self.parameter}_xgb{method}_dispersions.json"))
-        dispersion = self.get_dispersion(dispersions, period, damping, hardening_ratio, ductility, dynamic_ductility)
+        dispersion = self._get_dispersion(dispersions, period, damping, hardening_ratio, ductility, dynamic_ductility)
 
         prediction = {
             "strength_ratio": median[0],
@@ -128,14 +134,28 @@ class XGBPredict:
 
         return prediction
         
-    def get_dispersion(self, dispersions, period, damping, hardening_ratio, ductility, dynamic_ductility) -> float:
-        """
-        Gets dispersion values
+    def _get_dispersion(self, dispersions: dict, period: float, damping: float, hardening_ratio: float, ductility: float, dynamic_ductility: float) -> float:
+        """Gets dispersion values
+
+        Parameters
+        ----------
+        dispersions : dict
+            Dispersions
+        period : float
+            Period in [s]
+        damping : float
+            Damping
+        hardening_ratio : float
+            Hardening ratio
+        ductility : float
+            Ductility
+        dynamic_ductility : float
+            Dynamic ductility
 
         Returns
         ----------
-        val: float
-            Dispersion
+        float
+            Dispersion value
         """
         dispersion = dispersions[str(float(period))][str(float(damping))][str(float(hardening_ratio))][str(ductility)]
         if self.collapse:

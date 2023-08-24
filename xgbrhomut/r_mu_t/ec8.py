@@ -1,29 +1,29 @@
-def strength_ratio(mu, T, Tc):
-    """
-    Details:
-    This implements the R-mu-T relationship provided in Annex B of Eurocode 8 Part 1
+def strength_ratio(mu: float, period: float, period_c: float) -> float:
+    """This implements the R-mu-T relationship provided in Annex B of Eurocode 8 Part 1
 
-    References:
+    References
+	-------
     CEN. [2004] Eurocode 8: Design of Structures for Earthquake Resistance -
     Part 1: General Rules, Seismic Actions and Rules for Buildings
     (EN 1998-1:2004), Brussels, Belgium.
 
     Parameters
-    ----------
-    mu: float
+	-------
+    mu : float
         Ductility
-    T: float
+    period : float
         Period
-    Tc: float
+    period_c : float
         Corner period
+        
     Returns
-    ----------
-    R: float
+	-------
+    float
         Strength ratio
     """
-    if T < Tc:
-        R = (mu - 1) * (T / Tc) + 1
+    if period < period_c:
+        strength_ratio = (mu - 1) * (period / period_c) + 1
     else:
-        R = mu
+        strength_ratio = mu
 
-    return R
+    return strength_ratio

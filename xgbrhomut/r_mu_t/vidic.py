@@ -1,7 +1,5 @@
-def strength_ratio(mu, T, Tc):
-	"""
-    Details:
-    This implements the R-mu-T relationship proposed by Vidic et al. (1994)
+def strength_ratio(mu: float, period: float, period_c: float) -> float:
+	"""This implements the R-mu-T relationship proposed by Vidic et al. (1994)
 
     References:
     Vidic, T., Fajfar, P., and Fischinger, M. [1994] “Consistent inelastic
@@ -9,30 +7,32 @@ def strength_ratio(mu, T, Tc):
     Structural Dynamics, Vol. 23, No.5, pp. 507–521 DOI: 10.1002/eqe.4290230504.
 	
 	Parameters
-    ----------
-    mu:
-	T: float
+	------
+    mu : float
+		Ductility demand
+	period : float
 		Period
-    Tc: float
+    period_c : float
         Corner period (called T1 in article)
+	
 	Returns
-    ----------
-	R: float
+	------
+	float
 		Strength ratio
     """
 
 	# Set the empirical coeffienets
 	# Choose values for "bilinear, instantaneous stiffness" (4th row) from Table II of Vidic et al (1994)
 	c1 = 1.1
-	cR = 0.95
+	cr = 0.95
 	c2 = 0.75
-	cT = 0.2
+	ct = 0.2
 
-	T0 = c2 * pow(mu, cT) * Tc
+	period_0 = c2 * pow(mu, ct) * period_c
 
-	if T < T0:
-		R = c1 * pow(mu - 1, cR) * (T / T0) + 1
+	if period < period_0:
+		strength_ratio = c1 * pow(mu - 1, cr) * (period / period_0) + 1
 	else:
-		R = c1 * pow(mu - 1, cR) + 1
+		strength_ratio = c1 * pow(mu - 1, cr) + 1
 
-	return R
+	return strength_ratio
