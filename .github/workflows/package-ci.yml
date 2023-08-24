@@ -1,0 +1,30 @@
+name: xgb-rhomut
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+      name: Build and Test
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: checkout Repository
+          uses: actions/checkout@v2
+        - name: install python version 3.8
+          uses: actions/setup-python@v2
+          with:
+            python-version: 3.8
+        - name: update pip
+          run: python -m pip install --upgrade pip
+        - name: install dependencies
+          run: |
+            pip install .
+            pip install -e .[dev]
+        - name: run tests
+          run: pytest
+        - name: lint code
+          run: flake8
+          
