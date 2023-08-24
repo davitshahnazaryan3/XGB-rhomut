@@ -34,7 +34,7 @@ def nonCollapse_model():
     return model
 
 
-@pytest.mark.rhomut
+@pytest.mark.predict
 class XGBPredictTest:
     @pytest.mark.parametrize("im_type, collapse, expected", [
         ("sa", True, "R"),
