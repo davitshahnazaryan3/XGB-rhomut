@@ -4,8 +4,8 @@ import os
 
 sys.path.append(os.path.abspath('src'))
 
-from xgbrhomut import XGBPredict
 from schema import Schema, And, Use, SchemaError
+from xgbrhomut import XGBPredict
 
 
 output_schema = Schema({
@@ -29,7 +29,7 @@ def collapse_model():
 
 
 @pytest.fixture(scope="session")
-def nonCollapse_model():
+def non_collapse_model():
     model = XGBPredict("sa", False)
     return model
 
@@ -56,11 +56,13 @@ class XGBPredictTest:
         (4, False),
         (4, True)
     ])
-    def test_dynamic_ductility_non_collapse(self, collapse_model, nonCollapse_model, duct, collapse):
+    def test_dynamic_ductility_non_collapse(self, collapse_model,
+                                            non_collapse_model,
+                                            duct, collapse):
         if collapse:
             model = collapse_model
         else:
-            model = nonCollapse_model
+            model = non_collapse_model
 
         if not duct and not collapse:
             with pytest.raises(ValueError):
@@ -69,4 +71,3 @@ class XGBPredictTest:
             prediction = model.make_prediction(1, 0.05, 0.05, 3, duct)
             valid = validate_schema(output_schema, prediction)
             assert valid
-            

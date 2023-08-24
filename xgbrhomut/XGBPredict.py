@@ -1,7 +1,7 @@
-import joblib
 import json
 import warnings
 from pathlib import Path
+import joblib
 
 import numpy as np
 import pandas as pd
@@ -31,7 +31,7 @@ class XGBPredict:
             True for collapse scenarios
             False for non-collapse scenarios
             Note: ro_2 is always for non-collapse, while ro_3 is for collapse
-            
+
         Raises
         ------
         ValueError
@@ -50,20 +50,36 @@ class XGBPredict:
 
         self.collapse = collapse
 
-    def _verify_input(self, period, damping, hardening_ratio, ductility) -> None:
+    def _verify_input(
+        self,
+        period,
+        damping,
+        hardening_ratio,
+        ductility
+    ) -> None:
         if not (0.01 <= period <= 3.0):
-            warnings.warn("Period is not within recommended limits [0.01, 3.0]")
-        
+            warnings.warn(
+                "Period is not within recommended limits [0.01, 3.0]")
+
         if not (0.02 <= damping <= 0.2):
-            warnings.warn("Period is not within recommended limits [0.02, 0.2]")
+            warnings.warn(
+                "Period is not within recommended limits [0.02, 0.2]")
 
         if not (0.02 <= hardening_ratio <= 0.07):
-            warnings.warn("Period is not within recommended limits [0.02, 0.07]")
+            warnings.warn(
+                "Period is not within recommended limits [0.02, 0.07]")
 
         if not (2.0 <= ductility <= 8.0):
             warnings.warn("Period is not within recommended limits [2.0, 8.0]")
-        
-    def make_prediction(self, period: float, damping: float, hardening_ratio: float, ductility: float, dynamic_ductility:float=None) -> PredictionSchema:
+
+    def make_prediction(
+        self,
+        period: float,
+        damping: float,
+        hardening_ratio: float,
+        ductility: float,
+        dynamic_ductility: float = None
+    ) -> PredictionSchema:
         """
         Make predictions using the XGB model
 
@@ -78,7 +94,8 @@ class XGBPredict:
         ductility : float
             Hardening ductility of system
         dynamic_ductility : float
-            Ductility where the strength ratio is being predicted, required for non-collapse predictions
+            Ductility where the strength ratio is being predicted, required
+            for non-collapse predictions
 
         Returns
         ----------
@@ -92,7 +109,8 @@ class XGBPredict:
         self._verify_input(period, damping, hardening_ratio, ductility)
 
         if not dynamic_ductility and not self.collapse:
-            raise ValueError("Dynamic ductility not provided for non-collapse predictions")
+            raise ValueError(
+                "Dynamic ductility not provided for non-collapse predictions")
 
         if self.collapse:
             method = "_collapse"
@@ -100,10 +118,13 @@ class XGBPredict:
             method = ""
 
         # Read the XGB model
-        model = joblib.load(path.parents[0] / f"models/{self.parameter}_xgb{method}.sav")
+        model = joblib.load(
+            path.parents[0] / f"models/{self.parameter}_xgb{method}.sav")
 
         # Get the scaler
-        scaler = joblib.load(path.parents[0] / f"models/{self.parameter}_xgb{method}_scaler.sav")
+        scaler = joblib.load(
+            path.parents[0] /
+            f"models/{self.parameter}_xgb{method}_scaler.sav")
 
         # Construct the input parameters
         xgb_input = {
@@ -116,7 +137,7 @@ class XGBPredict:
         # Ad dynamic ductility for non-collapse predictions
         if not self.collapse:
             xgb_input["actual_ductility_end"] = [dynamic_ductility]
-        
+
         xgb_input = pd.DataFrame.from_dict(xgb_input)
         x = scaler.transform(xgb_input)
 
@@ -124,8 +145,12 @@ class XGBPredict:
         median = np.expm1(model.predict(matrix))
 
         # Retrieve dispersion
-        dispersions = json.load(open(path.parents[0] / f"models/{self.parameter}_xgb{method}_dispersions.json"))
-        dispersion = self._get_dispersion(dispersions, period, damping, hardening_ratio, ductility, dynamic_ductility)
+        dispersions = json.load(
+            open(path.parents[0] /
+                 f"models/{self.parameter}_xgb{method}_dispersions.json"))
+        dispersion = self._get_dispersion(
+            dispersions, period, damping,
+            hardening_ratio, ductility, dynamic_ductility)
 
         prediction = {
             "strength_ratio": median[0],
@@ -133,8 +158,16 @@ class XGBPredict:
         }
 
         return prediction
-        
-    def _get_dispersion(self, dispersions: dict, period: float, damping: float, hardening_ratio: float, ductility: float, dynamic_ductility: float) -> float:
+
+    def _get_dispersion(
+        self,
+        dispersions: dict,
+        period: float,
+        damping: float,
+        hardening_ratio: float,
+        ductility: float,
+        dynamic_ductility: float
+    ) -> float:
         """Gets dispersion values
 
         Parameters
@@ -157,18 +190,22 @@ class XGBPredict:
         float
             Dispersion value
         """
-        dispersion = dispersions[str(float(period))][str(float(damping))][str(float(hardening_ratio))][str(ductility)]
+        dispersion = dispersions[str(float(period))][str(
+            float(damping))][str(float(hardening_ratio))][str(ductility)]
         if self.collapse:
             return dispersion
 
         ductilities = dispersions["ductility"]
 
-        interpolator = interp1d(ductilities, dispersion, fill_value=[dispersion[-1]], bounds_error=False)
+        interpolator = interp1d(ductilities, dispersion, fill_value=[
+                                dispersion[-1]], bounds_error=False)
 
         val = float(interpolator(dynamic_ductility))
-        
+
         if np.isnan(val) or val == 0:
-            warnings.warn("Dispersion is null, as dynamic ductility is unattainable for given input... Try with smaller dynamic ductility value")
+            warnings.warn(
+                "Dispersion is null, as dynamic ductility is unattainable for "
+                "given input... Try with smaller dynamic ductility value")
             val = max(dispersion)
 
         return val
