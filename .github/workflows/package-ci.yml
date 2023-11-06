@@ -41,8 +41,8 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: install twine
-        run: python -m pip install --upgrade twine
+      - name: install twine setuptools wheel
+        run: python -m pip install --upgrade twine setuptools wheel
 
       - name: publish to PyPI
         run: |
