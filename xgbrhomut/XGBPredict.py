@@ -119,12 +119,11 @@ class XGBPredict:
 
         # Read the XGB model
         model = joblib.load(
-            path.parents[0] / f"models/{self.parameter}_xgb{method}.sav")
+            path / f"models/{self.parameter}_xgb{method}.sav")
 
         # Get the scaler
         scaler = joblib.load(
-            path.parents[0] /
-            f"models/{self.parameter}_xgb{method}_scaler.sav")
+            path / f"models/{self.parameter}_xgb{method}_scaler.sav")
 
         # Construct the input parameters
         xgb_input = {
@@ -145,9 +144,8 @@ class XGBPredict:
         median = np.expm1(model.predict(matrix))
 
         # Retrieve dispersion
-        dispersions = json.load(
-            open(path.parents[0] /
-                 f"models/{self.parameter}_xgb{method}_dispersions.json"))
+        dispersions = json.load(open(
+            path / f"models/{self.parameter}_xgb{method}_dispersions.json"))
         dispersion = self._get_dispersion(
             dispersions, period, damping,
             hardening_ratio, ductility, dynamic_ductility)
@@ -173,7 +171,15 @@ class XGBPredict:
         Parameters
         ----------
         dispersions : dict
-            Dispersions
+            Dispersions, {
+                "period": {
+                    "damping": {
+                        "hardening_ratio": {
+                            "ductility": float
+                        }
+                    }
+                }
+            }
         period : float
             Period in [s]
         damping : float
@@ -190,8 +196,37 @@ class XGBPredict:
         float
             Dispersion value
         """
-        dispersion = dispersions[str(float(period))][str(
-            float(damping))][str(float(hardening_ratio))][str(ductility)]
+
+        def is_valid_float(s):
+            try:
+                float(s)
+                return True
+            except ValueError:
+                return False
+
+        period_key = str(min((
+            key for key in dispersions if is_valid_float(key)),
+            key=lambda x: abs(float(x) - period), default=None
+        ))
+
+        damp_key = str(min((
+            key for key in dispersions[period_key] if is_valid_float(key)),
+            key=lambda x: abs(float(x) - damping), default=None
+        ))
+
+        hard_key = str(min((
+            key for key in dispersions[period_key][damp_key]
+            if is_valid_float(key)),
+            key=lambda x: abs(float(x) - hardening_ratio), default=None
+        ))
+
+        duct_key = str(min((
+            key for key in dispersions[period_key][damp_key][hard_key]
+            if is_valid_float(key)),
+            key=lambda x: abs(float(x) - ductility), default=None
+        ))
+
+        dispersion = dispersions[period_key][damp_key][hard_key][duct_key]
         if self.collapse:
             return dispersion
 

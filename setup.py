@@ -1,2 +1,7 @@
 from setuptools import setup
-setup()
+setup(
+    package_data={'xgbrhomut': [
+        'models/*.sav',
+        'models/*.json',
+    ]},
+)

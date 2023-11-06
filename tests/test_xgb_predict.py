@@ -2,7 +2,7 @@ import pytest
 import sys
 import os
 
-sys.path.append(os.path.abspath('src'))
+sys.path.append(os.path.abspath('xgbrhomut'))
 
 from schema import Schema, And, Use, SchemaError
 from xgbrhomut import XGBPredict
@@ -66,8 +66,8 @@ class XGBPredictTest:
 
         if not duct and not collapse:
             with pytest.raises(ValueError):
-                model.make_prediction(1, 0.05, 0.05, 3, duct)
+                model.make_prediction(1, 0.075, 0.05, 3, duct)
         else:
-            prediction = model.make_prediction(1, 0.05, 0.05, 3, duct)
+            prediction = model.make_prediction(1, 0.075, 0.05, 3, duct)
             valid = validate_schema(output_schema, prediction)
             assert valid

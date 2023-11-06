@@ -27,4 +27,27 @@ jobs:
           run: pytest
         - name: lint code
           run: flake8
-          
+  
+  publish:
+    name: Publish to PyPi
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: install twine
+        run: python -m pip install --upgrade twine
+
+      - name: publish to PyPI
+        run: |
+          python setup.py sdist bdist_wheel
+          twine upload --skip-existing dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
