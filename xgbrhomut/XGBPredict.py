@@ -108,16 +108,16 @@ class XGBPredict:
         """
         self._verify_input(period, damping, hardening_ratio, ductility)
 
-        if dynamic_ductility < 1.0 and self.parameter == "sa" \
-                and not self.collapse:
+        if not dynamic_ductility and not self.collapse:
+            raise ValueError(
+                "Dynamic ductility not provided for non-collapse predictions")
+
+        if not self.collapse and dynamic_ductility < 1.0 \
+                and self.parameter == "sa":
             return {
                 "strength_ratio": dynamic_ductility,
                 "dispersion": 0.0,
             }
-
-        if not dynamic_ductility and not self.collapse:
-            raise ValueError(
-                "Dynamic ductility not provided for non-collapse predictions")
 
         if self.collapse:
             method = "_collapse"
