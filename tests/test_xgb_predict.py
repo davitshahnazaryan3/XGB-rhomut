@@ -56,8 +56,8 @@ class XGBPredictTest:
         (4, False),
         (4, True)
     ])
-    def test_dynamic_ductility_non_collapse(self, collapse_model,
-                                            non_collapse_model,
+    def test_dynamic_ductility_non_collapse(self, collapse_model: XGBPredict,
+                                            non_collapse_model: XGBPredict,
                                             duct, collapse):
         if collapse:
             model = collapse_model
