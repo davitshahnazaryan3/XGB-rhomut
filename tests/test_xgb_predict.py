@@ -9,7 +9,7 @@ from xgbrhomut import XGBPredict
 
 
 output_schema = Schema({
-    'strength_ratio': And(Use(float)),
+    'median': And(Use(float)),
     'dispersion': And(Use(float))
 })
 
@@ -71,3 +71,19 @@ class XGBPredictTest:
             prediction = model.make_prediction(1, 0.075, 0.05, 3, duct)
             valid = validate_schema(output_schema, prediction)
             assert valid
+
+    @pytest.mark.parametrize("strength_ratio, expected", [
+        (3.0, 2.7),
+        (12.0, 11.9),
+        (0.2, 0.2),
+        (1.0, 1.0),
+    ])
+    def test_ductility(self, non_collapse_model: XGBPredict,
+                       strength_ratio: float,
+                       expected: float):
+        prediction = non_collapse_model.make_prediction(
+            1, 0.075, 0.05, 3, strength_ratio=strength_ratio)
+        valid = validate_schema(output_schema, prediction)
+        assert valid
+
+        assert prediction["median"] == pytest.approx(expected, abs=0.1)

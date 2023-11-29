@@ -19,6 +19,8 @@ class PredictionSchema(BaseModel):
 
 
 class XGBPredict:
+    ductility_range = np.arange(0.05, 12, 0.1)
+
     def __init__(self, im_type: str, collapse: bool) -> None:
         """
         Initialize XGB model
@@ -30,7 +32,8 @@ class XGBPredict:
         collapse : bool
             True for collapse scenarios
             False for non-collapse scenarios
-            Note: ro_2 is always for non-collapse, while ro_3 is for collapse
+            Note: currently ro_2 is always for non-collapse, while ro_3 is
+            for collapse
 
         Raises
         ------
@@ -72,52 +75,56 @@ class XGBPredict:
         if not (2.0 <= ductility <= 8.0):
             warnings.warn("Period is not within recommended limits [2.0, 8.0]")
 
-    def make_prediction(
-        self,
-        period: float,
-        damping: float,
-        hardening_ratio: float,
-        ductility: float,
-        dynamic_ductility: float = None
-    ) -> PredictionSchema:
-        """
-        Make predictions using the XGB model
+    def _estimate_ductility(
+            self, period, damping, hardening_ratio, ductility, strength_ratio):
+        method, scaler, model, xgb_input = self._get_model(
+            period, damping, hardening_ratio, ductility, None)
 
-        Parameters
-        ----------
-        period : float
-            Period
-        damping : float
-            Damping ratio
-        hardening_ratio : float
-            Hardening ratio
-        ductility : float
-            Hardening ductility of system
-        dynamic_ductility : float
-            Ductility where the strength ratio is being predicted, required
-            for non-collapse predictions
+        disp_model = json.load(open(
+            path / f"models/{self.parameter}_xgb{method}_dispersions.json"))
 
-        Returns
-        ----------
-        PredictionSchema
-            Predictions in dict type
-            {
-                Strength ratio (R, ro_2 or ro_3),
-                dispersion
-            }
-        """
-        self._verify_input(period, damping, hardening_ratio, ductility)
+        medians = np.zeros(self.ductility_range.shape)
+        dispersions = np.zeros(self.ductility_range.shape)
+        for i, duct in enumerate(self.ductility_range):
+            xgb_input["actual_ductility_end"] = [duct]
 
-        if not dynamic_ductility and not self.collapse:
-            raise ValueError(
-                "Dynamic ductility not provided for non-collapse predictions")
+            if duct < 1.0 and self.parameter == "sa":
+                medians[i] = duct
+                dispersions[i] = 0.0
+                continue
 
-        if not self.collapse and dynamic_ductility < 1.0 \
-                and self.parameter == "sa":
-            return {
-                "strength_ratio": dynamic_ductility,
-                "dispersion": 0.0,
-            }
+            xgb_input = pd.DataFrame.from_dict(xgb_input)
+            x = scaler.transform(xgb_input)
+
+            matrix = xgb.DMatrix(x)
+            medians[i] = np.expm1(model.predict(matrix))[0]
+            dispersions[i] = self._get_dispersion(
+                disp_model, period, damping,
+                hardening_ratio, ductility, duct)
+            if not self.collapse and self.parameter != "sa" \
+                    and duct < 0.625:
+                medians[i] = duct
+
+        if strength_ratio > max(medians):
+            strength_ratio = max(medians)
+
+        if strength_ratio < min(medians):
+            strength_ratio = min(medians)
+
+        int_median = interp1d(medians, self.ductility_range)
+        int_disp = interp1d(medians, dispersions)
+
+        median = int_median(strength_ratio)
+        disp = int_disp(strength_ratio)
+
+        return {
+            "median": median,
+            "dispersion": disp
+        }
+
+    def _get_model(
+            self, period, damping, hardening_ratio, ductility,
+            dynamic_ductility):
 
         if self.collapse:
             method = "_collapse"
@@ -140,9 +147,69 @@ class XGBPredict:
             "ductility": [ductility],
         }
 
-        # Ad dynamic ductility for non-collapse predictions
+        # Add dynamic ductility for non-collapse predictions
         if not self.collapse:
             xgb_input["actual_ductility_end"] = [dynamic_ductility]
+
+        return method, scaler, model, xgb_input
+
+    def make_prediction(
+        self,
+        period: float,
+        damping: float,
+        hardening_ratio: float,
+        ductility: float,
+        dynamic_ductility: float = None,
+        strength_ratio: float = None,
+    ) -> PredictionSchema:
+        """
+        Make predictions using the XGB model
+
+        Parameters
+        ----------
+        period : float
+            Period
+        damping : float
+            Damping ratio
+        hardening_ratio : float
+            Hardening ratio
+        ductility : float
+            Hardening ductility of system
+        dynamic_ductility : float, optional
+            Ductility where the strength ratio is being predicted, required
+            for non-collapse predictions, by default None
+        strength_ratio : float
+            Strength ratio corresponding to which a ductility value is
+            being estimated, by default, None
+
+        Returns
+        ----------
+        PredictionSchema
+            Predictions in dict type
+            {
+                median (R, ro_2 or ro_3, or ductility),
+                dispersion
+            }
+        """
+        self._verify_input(period, damping, hardening_ratio, ductility)
+
+        if strength_ratio:
+            return self._estimate_ductility(
+                period, damping, hardening_ratio, ductility, strength_ratio)
+
+        if not dynamic_ductility and not self.collapse:
+            raise ValueError(
+                "Dynamic ductility not provided for non-collapse predictions")
+
+        if not self.collapse and dynamic_ductility < 1.0 \
+                and self.parameter == "sa":
+            return {
+                "median": dynamic_ductility,
+                "dispersion": 0.0,
+            }
+
+        method, scaler, model, xgb_input = self._get_model(
+            period, damping, hardening_ratio, ductility, dynamic_ductility)
 
         xgb_input = pd.DataFrame.from_dict(xgb_input)
         x = scaler.transform(xgb_input)
@@ -162,7 +229,7 @@ class XGBPredict:
             median[0] = dynamic_ductility
 
         prediction = {
-            "strength_ratio": median[0],
+            "median": median[0],
             "dispersion": dispersion,
         }
 
