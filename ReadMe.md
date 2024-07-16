@@ -57,7 +57,7 @@ Example 1: Dynamic strength ratio prediction of non-collapse scenarios at a dyna
     )
     
 
-Example 2: Dynamic ductility prediction given a strength ratio of 3.0 (since im_type is "sa_avg", and collapse is False, \rho_2 is being estimated):
+Example 2: Dynamic ductility prediction given a strength ratio of 3.0 (since im_type is "sa_avg", and collapse is False, $\rho_2$ is being estimated):
 
     import xgbrhomut
     model = xgbrhomut.XGBPredict(im_type="sa_avg", collapse=False)
@@ -105,4 +105,4 @@ Predictions made using the non-linear analysis resutls of 7292 unique SDOF syste
 
 ***
 ## References
-* Shahnazaryan D., O'Reilly J.G., 2023, Next-generation non-linear and collapse prediction models for short to long period systems via machine learning methods, *Under Review*
+* Shahnazaryan D., O'Reilly J.G., 2023, Next-generation non-linear and collapse prediction models for short to long period systems via machine learning methods, Engineering Structures 306(117801): 117801. https://doi.org/10.1016/j.engstruct.2024.117801
